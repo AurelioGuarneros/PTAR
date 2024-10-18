@@ -1,4 +1,3 @@
-import socket
 import tkinter as tk
 from tkinter import ttk
 import mysql.connector
@@ -17,10 +16,6 @@ GPIO.setup(RELE_PLACAS_PIN, GPIO.OUT)
 # Inicializar la electroválvula y las placas como desactivadas
 GPIO.output(RELE_ELECTROVALVULA_PIN, GPIO.HIGH)
 GPIO.output(RELE_PLACAS_PIN, GPIO.HIGH)
-
-# Dirección IP del maestro
-MAESTRO_IP = '192.168.0.101'  # Dirección IP del maestro
-MAESTRO_PORT = 12345  # Puerto del maestro
 
 # Variables de nivel de agua
 nivel_agua = 0  # 0% como nivel inicial
@@ -59,29 +54,6 @@ def actualizar_db_en_hilo(columna, valor):
 
     hilo = threading.Thread(target=actualizar)
     hilo.start()
-
-# Función para enviar la orden de activación/desactivación de las bombas al maestro
-def enviar_orden_bomba(mensaje):
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((MAESTRO_IP, MAESTRO_PORT))
-            s.sendall(mensaje.encode())
-            print(f"Orden enviada: {mensaje}")
-    except Exception as e:
-        print(f"Error al enviar la orden: {e}")
-
-# Funciones para los botones de las bombas
-def activar_bomba1():
-    enviar_orden_bomba('ACTIVAR_BOMBA_1')
-
-def desactivar_bomba1():
-    enviar_orden_bomba('DESACTIVAR_BOMBA_1')
-
-def activar_bomba2():
-    enviar_orden_bomba('ACTIVAR_BOMBA_2')
-
-def desactivar_bomba2():
-    enviar_orden_bomba('DESACTIVAR_BOMBA_2')
 
 # Función para activar la válvula
 def activar_valvula():
@@ -163,25 +135,15 @@ def interfaz_reactor():
     placas_button = ttk.Button(root, text="Activar/Desactivar Placas", command=toggle_placas)
     placas_button.grid(row=7, column=0, padx=10, pady=5)
 
-    # Botones para controlar las bombas
-    activar_bomba1_button = ttk.Button(root, text="Activar Bomba 1", command=activar_bomba1)
-    activar_bomba1_button.grid(row=8, column=0, padx=10, pady=5)
-
-    desactivar_bomba1_button = ttk.Button(root, text="Desactivar Bomba 1", command=desactivar_bomba1)
-    desactivar_bomba1_button.grid(row=9, column=0, padx=10, pady=5)
-
-    activar_bomba2_button = ttk.Button(root, text="Activar Bomba 2", command=activar_bomba2)
-    activar_bomba2_button.grid(row=10, column=0, padx=10, pady=5)
-
-    desactivar_bomba2_button = ttk.Button(root, text="Desactivar Bomba 2", command=desactivar_bomba2)
-    desactivar_bomba2_button.grid(row=11, column=0, padx=10, pady=5)
-    
     # Botón de salida
     salir_button = ttk.Button(root, text="Salir", command=lambda: (GPIO.cleanup(), root.quit()))
-    salir_button.grid(row=12, column=0, padx=10, pady=5)
-    
+    salir_button.grid(row=8, column=0, padx=10, pady=5)
+
+    # Iniciar la interfaz
     root.mainloop()
 
-# Iniciar interfaz
+# Ejecutar la interfaz del reactor
 interfaz_reactor()
 
+# Limpiar GPIO al salir
+GPIO.cleanup()
