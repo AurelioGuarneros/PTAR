@@ -71,12 +71,12 @@ def manejar_orden_bomba(orden):
 def escuchar_ordenes():
     global servidor_socket
     servidor_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    servidor_socket.bind(('192.168.0.102', 12345))  # IP del maestro
+    servidor_socket.bind(('192.168.0.100', 12345))  # IP del maestro
     servidor_socket.listen(5)
-    print("Esperando conexiones en 192.168.0.102:12345")
+    print("Esperando conexiones en 192.168.0.100:12345")
 
     while True:
-        conn, addr = servidor_socket.accept()
+        conn, addr = servidor_socket.accept()                                                  
         print(f"Conexión recibida de {addr}")
         orden = conn.recv(1024).decode()
         if orden:
