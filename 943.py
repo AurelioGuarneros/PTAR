@@ -60,13 +60,15 @@ def actualizar_db_en_hilo(columna, valor):
     hilo = threading.Thread(target=actualizar)
     hilo.start()
 
+reactor_id = 'R1'
 # Función para enviar la orden de activación/desactivación de las bombas al maestro
 def enviar_orden_bomba(mensaje):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((MAESTRO_IP, MAESTRO_PORT))
-            s.sendall(mensaje.encode())
-            print(f"Orden enviada: {mensaje}")
+             mensaje_completo = f"{reactor_id}:{mensaje}" 
+            s.sendall(mensaje_completo.encode())
+            print(f"Orden enviada: {mensaje_completo}")
     except Exception as e:
         print(f"Error al enviar la orden: {e}")
 

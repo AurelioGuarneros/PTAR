@@ -41,6 +41,7 @@ def registrar_bomba_en_db(bomba, procedencia):
         try:
             cursor = conn.cursor()
             cursor.execute("INSERT INTO estados (bomba, procedencia) VALUES (%s, %s)", (bomba, procedencia))
+            print(f"Registrado en DB: bomba={bomba}, procedencia={procedencia}")
             conn.commit()
             cursor.close()
         except Error as e:
@@ -48,37 +49,52 @@ def registrar_bomba_en_db(bomba, procedencia):
         finally:
             conn.close()
 
-# Función para manejar las órdenes de las bombas
+# Función para manejar la orden de las bombas
 def manejar_orden_bomba(orden):
-    if orden == 'ACTIVAR_BOMBA_1':
-        GPIO.output(BOMBA1_PIN, GPIO.LOW)
-        print("Bomba 1 activada")
-        registrar_bomba_en_db(1, 'Maestro')  # Registrar activación de bomba 1 en DB
-    elif orden == 'DESACTIVAR_BOMBA_1':
-        GPIO.output(BOMBA1_PIN, GPIO.HIGH)
-        print("Bomba 1 desactivada")
-        registrar_bomba_en_db(1, 'Maestro')  # Registrar desactivación de bomba 1 en DB
-    elif orden == 'ACTIVAR_BOMBA_2':
-        GPIO.output(BOMBA2_PIN, GPIO.LOW)
-        print("Bomba 2 activada")
-        registrar_bomba_en_db(2, 'Maestro')  # Registrar activación de bomba 2 en DB
-    elif orden == 'DESACTIVAR_BOMBA_2':
-        GPIO.output(BOMBA2_PIN, GPIO.HIGH)
-        print("Bomba 2 desactivada")
-        registrar_bomba_en_db(2, 'Maestro')  # Registrar desactivación de bomba 2 en DB
+    # Separar el reactor_id y la acción de la bomba
+    partes = orden.split(':')
+    print("msj pártes ", partes)
+    if len(partes) == 2:
+		
+        reactor_id, accion_bomba = partes  # Separar el identificador del reactor y la acción
+        procedencia = f"Reactor {reactor_id}"
+        print("msj prc", procedencia)
+        print("msj accion bomba ", accion_bomba)
+        # Operaciones de activación/desactivación para cada bomba
+        if  accion_bomba == "ACTIVAR_BOMBA_1":
+            GPIO.output(BOMBA1_PIN, GPIO.LOW)
+            print("Bomba 1 activada")
+            registrar_bomba_en_db(1, procedencia)  # Registrar activación de bomba 1 en DB con procedencia
+        elif  accion_bomba == "DESACTIVAR_BOMBA_1":
+            GPIO.output(BOMBA1_PIN, GPIO.HIGH)
+            print("Bomba 1 desactivada")
+            registrar_bomba_en_db(10, procedencia)  # Registrar desactivación de bomba 1 en DB con procedencia
+        elif  accion_bomba == "ACTIVAR_BOMBA_2":
+            GPIO.output(BOMBA2_PIN, GPIO.LOW)
+            print("Bomba 2 activada")
+            registrar_bomba_en_db(2, procedencia)  # Registrar activación de bomba 2 en DB con procedencia
+        elif  accion_bomba == "DESACTIVAR_BOMBA_2":
+            GPIO.output(BOMBA2_PIN, GPIO.HIGH)
+            print("Bomba 2 desactivada")
+            registrar_bomba_en_db(20, procedencia)  # Registrar desactivación de bomba 2 en DB con procedencia
+        else:
+            print(f"Acción desconocida: {accion_bomba}")
+    else:
+        print("Formato de mensaje incorrecto")
 
 # Función para escuchar órdenes desde el esclavo
 def escuchar_ordenes():
     global servidor_socket
     servidor_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    servidor_socket.bind(('192.168.0.100', 12345))  # IP del maestro
+    servidor_socket.bind(('169.254.42.111 ', 12345))  # IP del maestro
     servidor_socket.listen(5)
-    print("Esperando conexiones en 192.168.0.100:12345")
+    print("Esperando conexiones en 192.168.0.102:12345")
 
     while True:
         conn, addr = servidor_socket.accept()                                                  
         print(f"Conexión recibida de {addr}")
         orden = conn.recv(1024).decode()
+        print("Orden recibida:", orden)
         if orden:
             manejar_orden_bomba(orden)
         conn.close()
@@ -116,4 +132,3 @@ hilo_escucha.start()
 
 # Iniciar la interfaz gráfica
 iniciar_interfaz()
-
